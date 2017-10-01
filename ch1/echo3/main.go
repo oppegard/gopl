@@ -15,6 +15,9 @@ import (
 //!+
 func main() {
 	fmt.Println(strings.Join(os.Args, " "))
+	for i, arg := range os.Args[1:] {
+		fmt.Printf("%d: %s\n", i+1, arg)
+	}
 }
 
 //!-
