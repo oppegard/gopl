@@ -12,11 +12,10 @@ import (
 	"bufio"
 	"fmt"
 	"os"
-	"strings"
 )
 
 func main() {
-	counts := make(map[string][]string)
+	counts := make(map[string]map[string]int)
 	files := os.Args[1:]
 	if len(files) == 0 {
 		countLines(os.Stdin, counts)
@@ -31,33 +30,30 @@ func main() {
 			f.Close()
 		}
 	}
-	for line, files := range counts {
-		if len(files) > 1 {
-			fmt.Printf("%d\t%s\t%s\n", len(files), line, strings.Join(dedupeFiles(files), ", "))
+
+	for line, lineHitsPerFile := range counts {
+		lineCounts := 0
+		filesContainingLine := ""
+		for file, count := range lineHitsPerFile {
+			lineCounts += count
+			filesContainingLine += file
+			filesContainingLine += " "
+		}
+		if lineCounts > 1 {
+			fmt.Printf("%d\t%s\t%s\n", lineCounts, line, filesContainingLine)
 		}
 	}
 }
 
-func countLines(f *os.File, counts map[string][]string) {
+func countLines(f *os.File, counts map[string]map[string]int) {
 	input := bufio.NewScanner(f)
 	for input.Scan() {
-		counts[input.Text()] = append(counts[input.Text()], f.Name())
+		if _, ok := counts[input.Text()]; !ok {
+			counts[input.Text()] = make(map[string]int)
+		}
+		counts[input.Text()][f.Name()]++
 	}
 	// NOTE: ignoring potential errors from input.Err()
-}
-
-func dedupeFiles(files []string) []string {
-	encountered := map[string]bool{}
-
-	for v := range files {
-		encountered[files[v]] = true
-	}
-
-	result := []string{}
-	for key, _ := range encountered {
-		result = append(result, key)
-	}
-	return result
 }
 
 //!-
