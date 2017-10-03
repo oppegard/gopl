@@ -4,6 +4,7 @@
 // See page 8.
 
 // Echo3 prints its command-line arguments.
+// TODO: Exercise 1.3
 package main
 
 import (
