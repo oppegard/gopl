@@ -27,11 +27,16 @@ import (
 )
 
 //!+main
-var palette = []color.Color{color.Black, color.RGBA{0x00, 0xFF, 0x00, 0xff}}
+var palette = []color.Color{
+	color.Black,
+	color.RGBA{0x00, 0xFF, 0x00, 0xFF},
+	color.RGBA{0x66, 0x00, 0xFF, 0xFF},
+}
 
 const (
-	blackIndex = 0 // first color in palette
-	greenIndex = 1 // next color in palette
+	blackIndex   = 0 // first color in palette
+	greenIndex   = 1 // next color in palette
+	mysteryIndex = 2 // ????
 )
 
 func main() {
@@ -72,8 +77,12 @@ func lissajous(out io.Writer) {
 		for t := 0.0; t < cycles*2*math.Pi; t += res {
 			x := math.Sin(t)
 			y := math.Sin(t*freq + phase)
+			var foregroundColorIndex uint8 = greenIndex
+			if (math.Mod(float64(int(t)), 2.0)) == 1 {
+				foregroundColorIndex = mysteryIndex
+			}
 			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5),
-				greenIndex)
+				foregroundColorIndex)
 		}
 		phase += 0.1
 		anim.Delay = append(anim.Delay, delay)
