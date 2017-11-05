@@ -31,6 +31,7 @@ func main() {
 			os.Exit(1)
 		}
 		resp.Body.Close()
+		fmt.Printf("HTTP Status: %s\n", resp.Status)
 	}
 }
 
