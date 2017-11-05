@@ -22,10 +22,19 @@ func main() {
 	for _, url := range os.Args[1:] {
 		go fetch(url, ch) // start a goroutine
 	}
-	for range os.Args[1:] {
-		fmt.Println(<-ch) // receive from channel ch
+	f, err := os.Create("output.txt")
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "fetchall: error creating output.txt: %v", err)
+		os.Exit(1)
 	}
-	fmt.Printf("%.2fs elapsed\n", time.Since(start).Seconds())
+	for range os.Args[1:] {
+		_, err = f.WriteString(<-ch + "\n")
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "fetchall: error writing to output.txt: %v", err)
+		}
+	}
+	fmt.Fprintf(f, "%.2fs elapsed\n", time.Since(start).Seconds())
+	f.Close()
 }
 
 func fetch(url string, ch chan<- string) {
