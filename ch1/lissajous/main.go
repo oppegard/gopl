@@ -24,6 +24,7 @@ import (
 	"log"
 	"net/http"
 	"time"
+	"strconv"
 )
 
 //!+main
@@ -49,7 +50,25 @@ func main() {
 	if len(os.Args) > 1 && os.Args[1] == "web" {
 		//!+http
 		handler := func(w http.ResponseWriter, r *http.Request) {
-			lissajous(w)
+			if err := r.ParseForm(); err != nil {
+				log.Print(err)
+			}
+			cyclesParam := "5"
+			sizeParam := "100"
+			if v, ok := r.Form["cycles"]; ok {
+				cyclesParam = v[0]
+			}
+			if v, ok := r.Form["size"]; ok {
+				sizeParam = v[0]
+			}
+
+			cyclesInt, err := strconv.Atoi(cyclesParam)
+			sizeInt, err := strconv.Atoi(sizeParam)
+			if err != nil {
+				log.Print(err)
+				cyclesInt = 5
+			}
+			lissajous(w, float64(cyclesInt), sizeInt)
 		}
 		http.HandleFunc("/", handler)
 		//!-http
@@ -57,14 +76,14 @@ func main() {
 		return
 	}
 	//!+main
-	lissajous(os.Stdout)
+	lissajous(os.Stdout, 5, 100)
 }
 
-func lissajous(out io.Writer) {
+func lissajous(out io.Writer, cycles float64, size int) {
 	const (
-		cycles  = 5     // number of complete x oscillator revolutions
+		//cycles  = 5     // number of complete x oscillator revolutions
 		res     = 0.001 // angular resolution
-		size    = 100   // image canvas covers [-size..+size]
+		//size    = 100   // image canvas covers [-size..+size]
 		nframes = 64    // number of animation frames
 		delay   = 8     // delay between frames in 10ms units
 	)
@@ -81,7 +100,7 @@ func lissajous(out io.Writer) {
 			if (math.Mod(float64(int(t)), 2.0)) == 1 {
 				foregroundColorIndex = mysteryIndex
 			}
-			img.SetColorIndex(size+int(x*size+0.5), size+int(y*size+0.5),
+			img.SetColorIndex(size+int(x*float64(size)+0.5), size+int(y*float64(size)+0.5),
 				foregroundColorIndex)
 		}
 		phase += 0.1
